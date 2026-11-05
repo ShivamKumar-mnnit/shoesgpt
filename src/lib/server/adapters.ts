@@ -25,7 +25,7 @@ async function getHtml(url: string, extra: Record<string, string> = {}): Promise
       ...extra,
     },
     cache: "no-store",
-    signal: AbortSignal.timeout(12_000),
+    signal: AbortSignal.timeout(9_000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();

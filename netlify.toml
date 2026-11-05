@@ -1,0 +1,10 @@
+# Netlify picks up Next.js automatically (its Next.js adapter runs the server parts as Functions).
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Your domain, used in the sitemap, canonical links and share images.
+  # Change it in Netlify (Site configuration > Environment variables) if the domain changes.
+  NEXT_PUBLIC_SITE_URL = "https://shoesgpt.in"

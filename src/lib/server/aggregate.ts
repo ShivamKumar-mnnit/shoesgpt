@@ -4,7 +4,7 @@ import { ADAPTERS } from "./adapters";
 import { genderFits, groupListings, isFootwear, linkQueryFor, modelTokens, normBrand, queryFor, similarity, SAME_SHOE, toGroup } from "../match";
 
 /** Longest we wait for any one store before showing results without it. */
-const STORE_BUDGET_MS = 15_000;
+const STORE_BUDGET_MS = 8_000; // stays under serverless time limits (e.g. Netlify Functions)
 
 /* Small in-memory cache so repeated views don't hit the stores again. */
 const TTL = 10 * 60 * 1000;

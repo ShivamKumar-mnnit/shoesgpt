@@ -15,7 +15,7 @@ const cache = new Map<string, { at: number; ttl: number; data: Promise<unknown> 
 function cachedJson<T>(url: string, ttlMs: number): Promise<T> {
   const hit = cache.get(url);
   if (hit && Date.now() - hit.at < hit.ttl) return hit.data as Promise<T>;
-  const data = fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10_000) }).then((r) => {
+  const data = fetch(url, { cache: "no-store", signal: AbortSignal.timeout(6_000) }).then((r) => {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.json() as Promise<T>;
   });
