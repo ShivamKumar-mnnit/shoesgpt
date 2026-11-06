@@ -76,8 +76,8 @@ export function Browse() {
         className="mt-8 flex items-center gap-3 rounded-full border-2 border-ink bg-white p-1.5 pl-5"
       >
         <Search className="size-5 text-muted" />
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search shoes, brands, sports…" className="flex-1 bg-transparent py-2 text-lg outline-none" />
-        <button className="rounded-full bg-ink px-6 py-3 font-semibold text-paper transition hover:bg-accent">Search</button>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search shoes, brands, sports…" className="min-w-0 flex-1 bg-transparent py-2 text-lg outline-none" />
+        <button className="shrink-0 rounded-full bg-ink px-4 py-3 font-semibold text-paper transition hover:bg-accent sm:px-6">Search</button>
       </form>
 
       <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto">

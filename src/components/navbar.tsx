@@ -24,7 +24,7 @@ const LINKS = [
 
 export function Logo() {
   return (
-    <Link href="/" className="group flex items-center gap-1.5 text-xl tracking-tight">
+    <Link href="/" className="group flex shrink-0 items-center gap-1.5 text-lg tracking-tight sm:text-xl">
       <Sparkle className="size-4 text-accent transition-transform duration-700 group-hover:rotate-180" />
       <span className="font-medium">shoes</span>
       <span className="-ml-1 font-black">GPT</span>
@@ -70,7 +70,7 @@ export function Navbar() {
       >
         <nav
           className={clsx(
-            "mx-auto flex max-w-7xl items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 md:px-6",
+            "mx-auto flex max-w-7xl items-center justify-between gap-2 rounded-full px-3 py-2.5 sm:px-4 transition-all duration-500 md:px-6",
             scrolled ? "border border-line/70 bg-paper/75 shadow-[0_8px_30px_-12px_rgba(0,0,0,.15)] backdrop-blur-xl" : "bg-transparent",
           )}
         >
@@ -87,24 +87,24 @@ export function Navbar() {
             ))}
           </ul>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <RegionSwitch />
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 rounded-full border border-line bg-white/60 py-2 pl-3 pr-2 text-sm text-muted transition hover:border-ink/30"
+              className="flex items-center gap-2 rounded-full border border-line bg-white/60 p-2.5 text-sm text-muted md:py-2 md:pl-3 md:pr-2 transition hover:border-ink/30"
               aria-label="Search shoes"
             >
               <Search className="size-4" />
               <span className="hidden md:inline">Search shoes</span>
               <kbd className="hidden rounded-md bg-paper-2 px-1.5 py-0.5 font-mono text-[10px] md:inline">Ctrl K</kbd>
             </button>
-            <Link href="/likes" className="relative grid size-10 place-items-center rounded-full transition hover:bg-ink/5" aria-label="Liked shoes">
+            <Link href="/likes" className="relative hidden size-10 place-items-center sm:grid rounded-full transition hover:bg-ink/5" aria-label="Liked shoes">
               <Heart className="size-[18px]" />
               <Count n={likes.length} />
             </Link>
             <Link
               href="/compare"
-              className="relative flex items-center gap-2 rounded-full bg-ink py-2 pl-3 pr-4 text-sm font-semibold text-paper transition hover:bg-accent"
+              className="relative flex items-center gap-2 rounded-full bg-ink py-2 pl-2.5 pr-2.5 sm:pl-3 sm:pr-4 text-sm font-semibold text-paper transition hover:bg-accent"
             >
               <Scale className="size-4" />
               <span className="hidden sm:inline">Compare</span>
@@ -117,7 +117,7 @@ export function Navbar() {
                 {compare.length}
               </motion.span>
             </Link>
-            <button className="grid size-10 place-items-center rounded-full lg:hidden" onClick={() => setMenu((m) => !m)} aria-label="Menu">
+            <button className="grid size-9 place-items-center rounded-full sm:size-10 lg:hidden" onClick={() => setMenu((m) => !m)} aria-label="Menu">
               {menu ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
@@ -131,7 +131,7 @@ export function Navbar() {
               exit={{ opacity: 0, y: -10 }}
               className="mx-auto mt-2 max-w-7xl rounded-3xl border border-line bg-paper/95 p-3 backdrop-blur-xl lg:hidden"
             >
-              {LINKS.map((l, i) => (
+              {[...LINKS, { href: "/likes", label: "Liked shoes" }].map((l, i) => (
                 <motion.li key={l.href} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
                   <Link href={l.href} onClick={() => setMenu(false)} className="block rounded-2xl px-4 py-3 text-2xl font-bold hover:bg-ink/5">
                     {l.label}
@@ -278,7 +278,7 @@ function RegionSwitch() {
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 rounded-full border border-line bg-white/60 px-3 py-2 text-sm font-semibold transition hover:border-ink/30"
+        className="flex items-center gap-1.5 rounded-full border border-line bg-white/60 px-2.5 py-2 text-sm font-semibold sm:px-3 transition hover:border-ink/30"
         aria-label="Choose country"
       >
         <Flag region={region} className="text-base" />

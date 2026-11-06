@@ -156,7 +156,7 @@ function Summary({ p }: { p: ProductGroup }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: EASE }}
-        className={clsx("mt-2 font-black leading-[0.95] tracking-tight", p.title.length > 45 ? "text-3xl md:text-4xl" : "text-4xl md:text-5xl")}
+        className={clsx("mt-2 font-black leading-[1.05] tracking-tight md:leading-[0.95]", p.title.length > 45 ? "text-3xl md:text-4xl" : "text-4xl md:text-5xl")}
       >
         {p.title}
       </motion.h1>

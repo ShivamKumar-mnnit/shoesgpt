@@ -77,3 +77,8 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Mobile safety: grid items may shrink below their content's width (long titles,
+   thumbnail strips), and nothing can make the page wider than the screen. */
+.grid > * { min-width: 0; }
+html, body { overflow-x: clip; }

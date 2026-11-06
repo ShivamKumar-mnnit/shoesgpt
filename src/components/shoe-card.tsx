@@ -83,7 +83,7 @@ export function ShoeCard({ p, index = 0, tone, reveal = true }: { p: ProductGrou
           ))}
         </div>
 
-        <div className="mt-auto flex items-end justify-between pt-4">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">Best price</p>
             <p className="text-xl font-black tracking-tight">
