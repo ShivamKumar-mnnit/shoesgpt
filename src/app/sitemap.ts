@@ -3,8 +3,13 @@ import { HREFLANG, SITE_URL, allLandings, alternatesFor, landingPath } from "@/l
 import type { Region } from "@/lib/types";
 import { LEAGUES } from "@/lib/football/leagues";
 import { STAR_BOOTS } from "@/lib/football/boots";
+import { getLiveMatches, getTeams } from "@/lib/football/data";
+import { teamHref } from "@/lib/football/espn";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+/** Leagues whose club pages are listed in the sitemap. */
+const TEAM_LEAGUES = ["premier-league", "laliga", "bundesliga", "serie-a", "ligue-1", "indian-super-league", "mls"];
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/shoes`, changeFrequency: "daily", priority: 0.8 },
@@ -24,5 +29,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       },
     });
   }
+
+  // Today's matches (live, upcoming and just finished) and club pages.
+  const [matches, ...teamLists] = await Promise.all([
+    getLiveMatches().catch(() => []),
+    ...TEAM_LEAGUES.map((slug) => getTeams(LEAGUES.find((l) => l.slug === slug)!.id)),
+  ]);
+  for (const mt of matches) {
+    pages.push({ url: `${SITE_URL}/football/match/${mt.league.slug}/${mt.id}`, lastModified: mt.date, changeFrequency: "always", priority: mt.state === "in" ? 1 : 0.7 });
+  }
+  teamLists.forEach((teams, i) => {
+    for (const t of teams) pages.push({ url: `${SITE_URL}${teamHref(TEAM_LEAGUES[i], t)}`, changeFrequency: "daily", priority: 0.8 });
+  });
   return pages;
 }

@@ -5,6 +5,8 @@ import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { CompareTray, Footer, Toast } from "@/components/chrome";
 import { JsonLd } from "@/components/seo";
+import { Suspense } from "react";
+import { getLiveMatches } from "@/lib/football/data";
 import { CONTACT, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -94,13 +96,21 @@ const siteSchema = [
   },
 ];
 
+/** Score bar with today's matches already filled in (cached, refreshed about every 30 seconds). */
+async function NavbarWithScores() {
+  const matches = await getLiveMatches().catch(() => undefined);
+  return <Navbar matches={matches?.slice(0, 30)} />;
+}
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body className="grain min-h-screen">
         <JsonLd data={siteSchema} />
         <Providers>
-          <Navbar />
+          <Suspense fallback={<Navbar />}>
+            <NavbarWithScores />
+          </Suspense>
           {/* Room for the live-score bar fixed at the top */}
           <div className="h-10" aria-hidden />
           <main>{children}</main>

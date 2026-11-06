@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { teamHref } from "@/lib/football/espn";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/football/match-list";
@@ -113,10 +115,10 @@ async function Table({ league }: { league: League }) {
             <tr key={r.team} className="border-t border-line/60">
               <td className="px-3 py-2 font-mono text-xs text-muted">{r.rank}</td>
               <td className="px-2 py-2">
-                <span className="flex items-center gap-2 font-semibold">
+                <Link href={teamHref(league.slug, { id: r.teamId, name: r.team })} className="flex items-center gap-2 font-semibold hover:text-accent">
                   <TeamLogo src={r.logo} alt={r.team} className="size-5 text-[8px]" />
                   <span className="truncate">{r.team}</span>
-                </span>
+                </Link>
               </td>
               <td className="px-2 py-2 text-center">{r.played}</td>
               <td className="hidden px-2 py-2 text-center sm:table-cell">{r.won}</td>

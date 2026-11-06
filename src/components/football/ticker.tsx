@@ -7,12 +7,12 @@ import { ChevronDown, X } from "lucide-react";
 import clsx from "clsx";
 import type { Match } from "@/lib/football/types";
 import { EASE } from "../ui";
-import { LiveDot, TeamLogo, useLiveMatches, useMatch } from "./common";
+import { LiveDot, TeamLogo, matchHref, useLiveMatches, useMatch } from "./common";
 import { MatchPanel } from "./match-panel";
 
 /** Thin live-score bar at the very top of every page. Click a match to expand it. */
-export function LiveTicker() {
-  const matches = useLiveMatches();
+export function LiveTicker({ initial }: { initial?: Match[] }) {
+  const matches = useLiveMatches(initial);
   const [open, setOpen] = useState<Match | null>(null);
   const list = matches?.slice(0, 30) ?? [];
   const liveCount = list.filter((m) => m.state === "in").length;
@@ -47,9 +47,15 @@ export function LiveTicker() {
             style={{ ["--marquee-duration" as string]: `${Math.max(list.length * 5, 30)}s` }}
           >
             {(scrolling ? [...list, ...list] : list).map((m, i) => (
-              <button
+              <a
                 key={`${m.id}-${i}`}
-                onClick={() => setOpen(m)}
+                href={matchHref(m)}
+                // A plain click opens the panel here; Ctrl/Cmd/middle-click still opens the match page.
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                  e.preventDefault();
+                  setOpen(m);
+                }}
                 className={clsx(
                   "flex h-7 shrink-0 items-center gap-2 rounded-full px-3 text-xs transition hover:bg-white/15",
                   open?.id === m.id && "bg-white/15",
@@ -66,7 +72,7 @@ export function LiveTicker() {
                 <span className={clsx("text-[10px]", m.state === "in" ? "font-bold text-red-400" : "text-paper/50")} suppressHydrationWarning>
                   {m.state === "pre" ? new Date(m.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : m.status}
                 </span>
-              </button>
+              </a>
             ))}
           </div>
         </div>

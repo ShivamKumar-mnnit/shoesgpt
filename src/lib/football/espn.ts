@@ -206,6 +206,7 @@ export async function matchDetail(leagueId: string, id: string): Promise<MatchDe
 
 export interface TableRow {
   rank: number;
+  teamId: string;
   team: string;
   logo: string | null;
   played: number;
@@ -218,13 +219,14 @@ export interface TableRow {
 
 export async function standings(leagueId: string): Promise<TableRow[]> {
   const j = await cachedJson<{
-    children?: { standings?: { entries?: { team: { displayName: string; logos?: { href: string }[] }; stats: { name: string; displayValue: string; value?: number }[] }[] } }[];
+    children?: { standings?: { entries?: { team: { id: string; displayName: string; logos?: { href: string }[] }; stats: { name: string; displayValue: string; value?: number }[] }[] } }[];
   }>(`https://site.api.espn.com/apis/v2/sports/soccer/${leagueId}/standings`, 30 * 60_000);
   const entries = j.children?.[0]?.standings?.entries ?? [];
   const stat = (e: (typeof entries)[0], n: string) => e.stats.find((s) => s.name === n);
   return entries
     .map((e) => ({
       rank: Number(stat(e, "rank")?.displayValue) || 0,
+      teamId: e.team.id,
       team: e.team.displayName,
       logo: e.team.logos?.[0]?.href ?? null,
       played: Number(stat(e, "gamesPlayed")?.displayValue) || 0,
@@ -235,4 +237,89 @@ export async function standings(leagueId: string): Promise<TableRow[]> {
       points: Number(stat(e, "points")?.displayValue) || 0,
     }))
     .sort((a, b) => a.rank - b.rank);
+}
+
+/* ---------------- teams ---------------- */
+
+export interface TeamInfo {
+  id: string;
+  name: string;
+  slug: string; // "real-madrid-86"
+  logo: string | null;
+}
+
+const teamSlug = (name: string, id: string) =>
+  `${name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}-${id}`;
+
+export const teamIdFromSlug = (slug: string) => slug.match(/-(\d+)$/)?.[1] ?? null;
+export const teamHref = (leagueSlug: string, t: { id: string; name: string }) => `/football/team/${leagueSlug}/${teamSlug(t.name, t.id)}`;
+
+export async function teamsInLeague(leagueId: string): Promise<TeamInfo[]> {
+  const j = await cachedJson<{ sports?: { leagues?: { teams?: { team: { id: string; displayName: string; logos?: { href: string }[] } }[] }[] }[] }>(
+    `${BASE}/${leagueId}/teams`,
+    6 * 3600_000,
+  );
+  return (j.sports?.[0]?.leagues?.[0]?.teams ?? []).map(({ team: t }) => ({
+    id: t.id,
+    name: t.displayName,
+    slug: teamSlug(t.displayName, t.id),
+    logo: t.logos?.[0]?.href ?? null,
+  }));
+}
+
+interface RawScheduleEvent {
+  id: string;
+  date: string;
+  league?: { slug?: string; name?: string; abbreviation?: string };
+  competitions?: {
+    status?: RawEvent["status"];
+    venue?: { fullName?: string };
+    competitors: (Omit<RawCompetitor, "score"> & { score?: { displayValue?: string } | string })[];
+  }[];
+}
+
+/** A team's results and upcoming fixtures across all competitions. */
+export async function teamSchedule(leagueId: string, teamId: string) {
+  if (!leagueById(leagueId) || !/^\d+$/.test(teamId)) return null;
+  const [past, next] = await Promise.all([
+    cachedJson<{ team?: { displayName: string; logo?: string }; events?: RawScheduleEvent[] }>(`${BASE}/${leagueId}/teams/${teamId}/schedule`, 120_000),
+    cachedJson<{ events?: RawScheduleEvent[] }>(`${BASE}/${leagueId}/teams/${teamId}/schedule?fixture=true`, 120_000).catch(() => ({ events: [] })),
+  ]);
+  if (!past.team) return null;
+
+  const toM = (e: RawScheduleEvent): Match | null => {
+    const comp = e.competitions?.[0];
+    if (!comp) return null;
+    const code = e.league?.slug ?? "";
+    const known = leagueById(code);
+    const state = comp.status?.type.state ?? "pre";
+    const competitors = comp.competitors.map((c) => ({ ...c, score: typeof c.score === "object" ? c.score?.displayValue : c.score }));
+    return {
+      id: e.id,
+      // Matches in competitions we don't list (cups) keep their name but have no match page.
+      league: known ? { id: known.id, slug: known.slug, name: known.name } : { id: code, slug: "", name: e.league?.name ?? "" },
+      date: e.date,
+      state,
+      status: state === "pre" ? "" : (comp.status?.type.shortDetail ?? ""),
+      home: side(competitors.find((c) => c.homeAway === "home") as RawCompetitor, state),
+      away: side(competitors.find((c) => c.homeAway === "away") as RawCompetitor, state),
+      venue: comp.venue?.fullName,
+    };
+  };
+  const all = [...(past.events ?? []), ...(next.events ?? [])].map(toM).filter((m): m is Match => !!m);
+  const unique = [...new Map(all.map((m) => [m.id, m])).values()];
+  const results = unique.filter((m) => m.state === "post").sort((a, b) => b.date.localeCompare(a.date));
+  const live = unique.filter((m) => m.state === "in");
+  const fixtures = unique.filter((m) => m.state === "pre").sort((a, b) => a.date.localeCompare(b.date));
+  return {
+    team: { id: teamId, name: past.team.displayName, logo: past.team.logo ?? null, slug: teamSlug(past.team.displayName, teamId) },
+    live,
+    results: results.slice(0, 10),
+    fixtures: fixtures.slice(0, 10),
+  };
 }

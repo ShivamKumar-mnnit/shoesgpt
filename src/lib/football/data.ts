@@ -1,5 +1,5 @@
 import { cacheLife } from "next/cache";
-import { leagueMatches, liveAndToday, matchDetail, standings } from "./espn";
+import { leagueMatches, liveAndToday, matchDetail, standings, teamSchedule, teamsInLeague } from "./espn";
 
 /*
  * Cached football data for server-rendered pages (what search engines see).
@@ -28,4 +28,16 @@ export async function getStandings(leagueId: string) {
   "use cache";
   cacheLife("hours");
   return standings(leagueId).catch(() => []);
+}
+
+export async function getTeam(leagueId: string, teamId: string) {
+  "use cache";
+  cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
+  return teamSchedule(leagueId, teamId);
+}
+
+export async function getTeams(leagueId: string) {
+  "use cache";
+  cacheLife("days");
+  return teamsInLeague(leagueId).catch(() => []);
 }

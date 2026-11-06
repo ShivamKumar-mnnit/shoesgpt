@@ -38,6 +38,10 @@ export default function FootballPage() {
         Live football scores
         <span className="block text-2xl font-bold tracking-tight text-muted md:text-3xl">Today’s results, lineups, stats and the stars’ boots</span>
       </h1>
+      <p className="mt-6 max-w-3xl text-lg text-ink-2">
+        Football live score for every big match today: the Champions League, Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, ISL and MLS.
+        Scores update every 30 seconds. Open a match for lineups, stats and commentary, and see the boots the players wear.
+      </p>
       <div className="mt-8">
         <LeagueNav />
       </div>

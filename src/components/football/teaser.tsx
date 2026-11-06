@@ -5,12 +5,13 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import clsx from "clsx";
 import { STAR_BOOTS, bootsLabel } from "@/lib/football/boots";
+import type { Match } from "@/lib/football/types";
 import { EASE, MaskText } from "../ui";
 import { MatchStatus, TeamLogo, matchHref, useLiveMatches } from "./common";
 
 /** Homepage block: live matches right now + the stars' boots. */
-export function FootballTeaser() {
-  const matches = useLiveMatches();
+export function FootballTeaser({ initial }: { initial?: Match[] }) {
+  const matches = useLiveMatches(initial);
   const top = (matches ?? []).slice(0, 6);
   return (
     <section className="mx-auto max-w-7xl px-5 py-24 md:px-10">

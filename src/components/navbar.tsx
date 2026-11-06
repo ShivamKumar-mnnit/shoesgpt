@@ -8,6 +8,7 @@ import { Heart, Menu, Scale, Search, X, ArrowUpRight, ChevronDown, Check } from 
 import clsx from "clsx";
 import { useRegion, useStore } from "./providers";
 import { LiveTicker } from "./football/ticker";
+import type { Match } from "@/lib/football/types";
 import { EASE, Flag, ShoeImg, Sparkle } from "./ui";
 import { money, shoeHref, useSearch } from "@/lib/client";
 import { REGIONS, REGION_IDS, liveStoresIn } from "@/lib/stores";
@@ -32,7 +33,8 @@ export function Logo() {
   );
 }
 
-export function Navbar() {
+/** `matches`: today's matches from the server, so the score bar is in the page HTML from the start. */
+export function Navbar({ matches }: { matches?: Match[] }) {
   const { compare, likes } = useStore();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -61,7 +63,7 @@ export function Navbar() {
   return (
     <>
       <div className="fixed inset-x-0 top-0 z-[56]">
-        <LiveTicker />
+        <LiveTicker initial={matches} />
       </div>
       <motion.header
         animate={{ y: hidden && !menu ? "-110%" : 0 }}

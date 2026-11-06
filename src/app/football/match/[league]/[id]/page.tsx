@@ -6,10 +6,11 @@ import { MatchLive } from "@/components/football/match-live";
 import { LeagueNav } from "@/components/football/sections";
 import { JsonLd, breadcrumbSchema, sportsEventSchema } from "@/components/seo";
 import { getMatch } from "@/lib/football/data";
-import { liveAndToday } from "@/lib/football/espn";
+import { liveAndToday, teamHref } from "@/lib/football/espn";
 import { leagueBySlug } from "@/lib/football/leagues";
 import { bootsLabel, starBySlug } from "@/lib/football/boots";
 import type { MatchDetail } from "@/lib/football/types";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 type Params = { league: string; id: string };
 
@@ -50,7 +51,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path, images: [{ url: "/opengraph-image", width: 1200, height: 630 }] },
+    // The share image comes from ./opengraph-image.tsx (teams + score).
+    openGraph: { title, description, url: path },
     twitter: { card: "summary_large_image", title, description },
   };
 }
@@ -79,6 +81,27 @@ async function MatchBody({ params }: { params: Promise<Params> }) {
       <JsonLd
         data={[
           sportsEventSchema(m, path),
+          // Live coverage markup (Google "LIVE" badge eligibility) once the match has started.
+          ...(m.state !== "pre"
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "LiveBlogPosting",
+                  headline: `${m.home.name} vs ${m.away.name} live: score, goals and commentary`,
+                  url: `${SITE_URL}${path}`,
+                  datePublished: m.date,
+                  coverageStartTime: m.date,
+                  coverageEndTime: new Date(new Date(m.date).getTime() + 150 * 60_000).toISOString(),
+                  about: sportsEventSchema(m, path),
+                  publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+                  liveBlogUpdate: m.commentary.slice(0, 15).map((c) => ({
+                    "@type": "BlogPosting",
+                    headline: (c.minute ? `${c.minute} ` : "") + c.text.slice(0, 100),
+                    articleBody: c.text,
+                  })),
+                },
+              ]
+            : []),
           breadcrumbSchema([
             { name: "Football", path: "/football" },
             { name: m.league.name, path: `/football/${m.league.slug}` },
@@ -97,6 +120,13 @@ async function MatchBody({ params }: { params: Promise<Params> }) {
           {m.state === "in" ? "Live score" : m.state === "post" ? "Result" : "Preview"}, lineups, stats & players’ boots
         </span>
       </h1>
+      <p className="-mt-4 mb-6 flex flex-wrap gap-2 text-sm">
+        {[m.home, m.away].map((t) => (
+          <Link key={t.id} href={teamHref(m.league.slug, t)} className="rounded-full border border-line bg-white px-3 py-1.5 font-semibold hover:border-ink">
+            {t.name}: fixtures & results →
+          </Link>
+        ))}
+      </p>
       <div className="rounded-[36px] bg-paper-2/60 p-5 md:p-8">
         <MatchLive initial={m} />
       </div>
